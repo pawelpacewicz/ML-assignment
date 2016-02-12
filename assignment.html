@@ -69,52 +69,26 @@ img {
 
 <div id="initiation" class="section level1">
 <h1>Initiation</h1>
-<pre><code>## Warning: package 'caret' was built under R version 3.2.3</code></pre>
-<pre><code>## Loading required package: lattice</code></pre>
-<pre><code>## Loading required package: ggplot2</code></pre>
-<pre><code>## Warning: package 'ggplot2' was built under R version 3.2.3</code></pre>
-<pre><code>## Warning: package 'randomForest' was built under R version 3.2.3</code></pre>
-<pre><code>## randomForest 4.6-12</code></pre>
-<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<pre><code>## 
-## Attaching package: 'randomForest'</code></pre>
-<pre><code>## Następujący obiekt został zakryty z 'package:ggplot2':
-## 
-##     margin</code></pre>
-<pre><code>## Warning: package 'rpart.plot' was built under R version 3.2.3</code></pre>
-<pre><code>## Warning: package 'rattle' was built under R version 3.2.3</code></pre>
-<pre><code>## Rattle: A free graphical interface for data mining with R.
-## Version 4.1.0 Copyright (c) 2006-2015 Togaware Pty Ltd.
-## Type 'rattle()' to shake, rattle, and roll your data.</code></pre>
-<pre><code>## 
-## Attaching package: 'dplyr'</code></pre>
-<pre><code>## Następujący obiekt został zakryty z 'package:randomForest':
-## 
-##     combine</code></pre>
-<pre><code>## Następujące obiekty zostały zakryte z 'package:stats':
-## 
-##     filter, lag</code></pre>
-<pre><code>## Następujące obiekty zostały zakryte z 'package:base':
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre><code>## Warning: package 'lubridate' was built under R version 3.2.3</code></pre>
-<pre class="r"><code>#rm(list=ls())
-#HOME
-#setwd(&quot;C:/Users/Silverbald/Dysk Google/EDU/Coursera/Data Science/8 Machine Learning/assignment&quot;)
-#WORK
-#setwd(&quot;C:/Users/pawel.pacewicz/Dysk Google/EDU/Coursera/Data Science/8 Machine Learning/assignment&quot;)
-#setwd(&quot;C:/Users/Silverbald/Dysk Google/EDU/Coursera/Data Science/8 Machine Learning/assignment&quot;)
-training&lt;-read.csv(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;))
-testing&lt;-read.csv(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;, na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;))
-#save.image(file=&quot;data.RData&quot;)
-#load(&quot;data.RData&quot;)</code></pre>
+<pre class="r"><code>library(caret)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+library(rattle)
+library(dplyr)
+library(lubridate)</code></pre>
+<p>for the Reproducibility please use following seed</p>
 <pre class="r"><code>set.seed(1234)</code></pre>
 </div>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
+<div id="background" class="section level2">
+<h2>Background</h2>
+<p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. The goal of this document is to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: <a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a> (see the section on the Weight Lifting Exercise Dataset).</p>
+</div>
 <div id="goal" class="section level2">
 <h2>Goal</h2>
-<p>Goal of this project is to predict the “classe” variable in the training set. “classe” describes manner in which participants did the exercise. There are 5 different fashions:</p>
+<p>Goal of this project is to predict the “classe” variable in the training set. “classe” describes manner in which participants did the exercise. There are 5 different ways to do excercise:</p>
 <ul>
 <li>exactly according to the specification (Class A) - correct execution of the excercise,</li>
 <li>throwing the elbows to the front (Class B) - incorrect execution of the excercise,</li>
@@ -157,12 +131,21 @@ testing&lt;-read.csv(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/p
 ## [7] &quot;num_window&quot;           &quot;classe&quot;</code></pre>
 </div>
 </div>
-<div id="reproducibility" class="section level1">
-<h1>Reproducibility</h1>
+<div id="expected-out-of-sample-error" class="section level1">
+<h1>Expected out of sample error</h1>
+<p>I expect that:</p>
+<ul>
+<li>The expected out-of-sample error will be higher than in-sample error.</li>
+<li>The Expected out-of-sample error of Decision Tree will be higher than for Random Forest (mainly due to fact that Random Forest is result of many Decision trees).</li>
+</ul>
+<div id="how-cross-validation-was-used" class="section level2">
+<h2>How cross validation was used</h2>
+<p>Cross-validation will be performed by 8-fold sampling on sub-training data set: sub-training data (70% of the original Training data set) and subTesting data (30%). Models will trained on the subTraining data set, and tested on the subTesting data. Then final model will be tested on the original Testing data set.</p>
 </div>
-<div id="how-i-built-my-model" class="section level1">
-<h1>How I built my model</h1>
-<p>I Build model with the following steps:</p>
+</div>
+<div id="how-model-was-built" class="section level1">
+<h1>How model was built</h1>
+<p>Model was build with the following steps:</p>
 <ol style="list-style-type: decimal">
 <li>cleaning the data - removing data (columns) which does not affect results (or affect it slightly)</li>
 <li>preparing sub-training and sub-testing sets</li>
@@ -174,6 +157,7 @@ testing&lt;-read.csv(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/p
 </div>
 <div id="cleaning-the-data" class="section level1">
 <h1>cleaning the data</h1>
+<p>Goal of this part is to clean all columns which does not affect result or affect it slightly. It’s done in following steps:</p>
 <div id="removing-columns-with-near-zero-variance" class="section level2">
 <h2>removing columns with near zero variance</h2>
 <pre class="r"><code>nzv_training&lt;-nearZeroVar(training, saveMetrics = TRUE)
@@ -188,15 +172,17 @@ testing&lt;-testing[,!highLevelNAs]</code></pre>
 </div>
 <div id="removing-data-not-related-to-measurements" class="section level2">
 <h2>removing data not related to measurements</h2>
-<p>this is data located in 1st 6 columns:</p>
+<p>data not related to measurement is located in columns 1-6:</p>
 <pre class="r"><code>colnames(training[,1:6])</code></pre>
 <pre><code>## [1] &quot;X&quot;                    &quot;user_name&quot;            &quot;raw_timestamp_part_1&quot;
 ## [4] &quot;raw_timestamp_part_2&quot; &quot;cvtd_timestamp&quot;       &quot;num_window&quot;</code></pre>
+<p>removing those columns:</p>
 <pre class="r"><code>training&lt;-training[,-(1:6)]
 testing&lt;-testing[,-(1:6)]</code></pre>
 </div>
-<div id="removing-highly-correlated-predictors" class="section level2">
-<h2>removing highly correlated predictors</h2>
+<div id="removing-highly-correlated-columns" class="section level2">
+<h2>removing highly correlated columns</h2>
+<p>Columns whivch are highly corelated does not provide any additional value to out trainings and predictions.</p>
 <pre class="r"><code>highlyCor&lt;-findCorrelation(cor(training[,-53]))
 training&lt;-training[,-highlyCor]
 testing&lt;-testing[,-highlyCor]</code></pre>
@@ -215,7 +201,7 @@ subTesting &lt;- training[-inTrain, ]</code></pre>
 </div>
 <div id="training-and-prediction" class="section level1">
 <h1>Training and prediction</h1>
-<p>2 training alorithms will be used:</p>
+<p>Two training alorithms will be used:</p>
 <ol style="list-style-type: decimal">
 <li>Decision Tree</li>
 <li>Random Forest</li>
@@ -225,20 +211,23 @@ subTesting &lt;- training[-inTrain, ]</code></pre>
 <pre class="r"><code>tc &lt;- trainControl(method = &quot;cv&quot;, number = 8, verboseIter=FALSE , preProcOptions=&quot;pca&quot;, allowParallel=TRUE)</code></pre>
 <div id="decision-tree" class="section level2">
 <h2>Decision Tree</h2>
+<p>preparing model based on Decision Tree</p>
 <pre class="r"><code>modFit_DT&lt;-train(classe~., data=subTraining, method=&quot;rpart&quot;, trControl=tc)</code></pre>
 </div>
 <div id="random-forest" class="section level2">
 <h2>Random Forest</h2>
+<p>preparing model based on Random Forest</p>
 <pre class="r"><code>modFit_RF&lt;-train(classe~., data=subTraining, method=&quot;rf&quot;, trControl=tc)</code></pre>
 </div>
 </div>
 <div id="results" class="section level1">
 <h1>results</h1>
-<div id="ptredictions" class="section level2">
-<h2>ptredictions</h2>
-<p>for both algorithms prediction results are prepared:</p>
-<pre class="r"><code>predict_DT&lt;-predict(modFit_DT, newdata = subTesting[,-46])
-predict_RF&lt;-predict(modFit_RF, newdata = subTesting[,-46])</code></pre>
+<div id="predictions" class="section level2">
+<h2>predictions</h2>
+<p>prediction based on Decision Tree</p>
+<pre class="r"><code>predict_DT&lt;-predict(modFit_DT, newdata = subTesting[,-46])</code></pre>
+<p>prediction based on Random Forest</p>
+<pre class="r"><code>predict_RF&lt;-predict(modFit_RF, newdata = subTesting[,-46])</code></pre>
 </div>
 <div id="comparition" class="section level2">
 <h2>comparition</h2>
@@ -310,8 +299,10 @@ cf_RF</code></pre>
 ## Detection Prevalence   0.2862   0.1924   0.1745   0.1635   0.1835
 ## Balanced Accuracy      0.9988   0.9942   0.9952   0.9959   0.9985</code></pre>
 <p>we can se clearly that Random Forest accuracy is very high 0.5305013 and much better than Decision Tree accuracy 0.9949023. Due to that we will use Random Forest model to make final prediction on testing data</p>
-<pre class="r"><code>results&lt;-predict(modFit_RF, newdata = testing[,-46])
-results</code></pre>
+<p>calculating results on final data set:</p>
+<pre class="r"><code>results&lt;-predict(modFit_RF, newdata = testing[,-46])</code></pre>
+<p>results:</p>
+<pre class="r"><code>results</code></pre>
 <pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
 ## Levels: A B C D E</code></pre>
 </div>
@@ -326,23 +317,6 @@ results</code></pre>
 <div id="wle-dataset" class="section level2">
 <h2>WLE dataset</h2>
 <p>Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013.</p>
-<p>====</p>
-<p>TODO:</p>
-<p>The goal of your project is to predict the manner in which they did the exercise. This is the “classe” variable in the training set. You may use any of the other variables to predict with. You should create a report describing:</p>
-<ul>
-<li>how you built your model,</li>
-<li>how you used cross validation,</li>
-<li>what you think the expected out of sample error is, and</li>
-<li>why you made the choices you did.</li>
-</ul>
-<p>You will also use your prediction model to predict 20 different test cases.</p>
-<p>Peer Review Portion</p>
-<p>Your submission for the Peer Review portion should consist of a link to a Github repo with your R markdown and compiled HTML file describing your analysis. Please constrain the text of the writeup to &lt; 2000 words and the number of figures to be less than 5. It will make it easier for the graders if you submit a repo with a gh-pages branch so the HTML page can be viewed online (and you always want to make it easy on graders :-).</p>
-<p>Course Project Prediction Quiz Portion</p>
-<p>Apply your machine learning algorithm to the 20 test cases available in the test data above and submit your predictions in appropriate format to the Course Project Prediction Quiz for automated grading.</p>
-<p>Reproducibility</p>
-<p>Due to security concerns with the exchange of R code, your code will not be run during the evaluation by your classmates. Please be sure that if they download the repo, they will be able to view the compiled HTML version of your analysis.</p>
-<p><a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a></p>
 </div>
 </div>
 
